@@ -1,0 +1,56 @@
+x-app: &app
+  restart: unless-stopped
+  environment: &environment
+    SERVER_ADDRESS: 0.0.0.0
+    JWT_SECRET: ${JWT_SECRET:?Run ./scripts/init-env.sh first}
+    EUREKA_URL: http://discovery-server:8761/eureka/
+    SEED_DATA: ${SEED_DATA:-true}
+    DEMO_ADMIN_PASSWORD: ${DEMO_ADMIN_PASSWORD:-admin12345}
+    DEMO_USER_PASSWORD: ${DEMO_USER_PASSWORD:-user12345}
+  mem_limit: 512m
+
+services:
+  discovery-server:
+    <<: *app
+    environment:
+      <<: *environment
+      SERVER_ADDRESS: 0.0.0.0
+    build:
+      context: .
+      args:
+        SERVICE: discovery-server
+    ports:
+      - "127.0.0.1:${DISCOVERY_PORT:-8761}:8761"
+  hotel-service:
+    <<: *app
+    build:
+      context: .
+      args:
+        SERVICE: hotel-service
+    ports:
+      - "127.0.0.1:${HOTEL_PORT:-8082}:8082"
+    depends_on:
+      - discovery-server
+  booking-service:
+    <<: *app
+    build:
+      context: .
+      args:
+        SERVICE: booking-service
+    ports:
+      - "127.0.0.1:${BOOKING_PORT:-8081}:8081"
+    depends_on:
+      - discovery-server
+      - hotel-service
+  gateway:
+    <<: *app
+    build:
+      context: .
+      args:
+        SERVICE: gateway
+    ports:
+      - "127.0.0.1:${GATEWAY_PORT:-8080}:8080"
+    depends_on:
+      - discovery-server
+      - hotel-service
+      - booking-service

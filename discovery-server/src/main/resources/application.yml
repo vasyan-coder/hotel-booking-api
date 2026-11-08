@@ -1,0 +1,33 @@
+server:
+  port: ${SERVER_PORT:8761}
+  address: ${SERVER_ADDRESS:127.0.0.1}
+spring:
+  application:
+    name: discovery-server
+  autoconfigure:
+    exclude: org.springframework.boot.autoconfigure.security.servlet.UserDetailsServiceAutoConfiguration
+eureka:
+  instance:
+    hostname: ${EUREKA_HOSTNAME:localhost}
+  client:
+    register-with-eureka: false
+    fetch-registry: false
+    service-url:
+      defaultZone: ${EUREKA_URL:http://localhost:8761/eureka/}
+registry:
+  security:
+    enabled: ${EUREKA_SECURITY_ENABLED:false}
+    username: ${EUREKA_USERNAME:registry}
+    password: ${EUREKA_PASSWORD:}
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info
+  endpoint:
+    health:
+      show-details: never
+logging:
+  structured:
+    format:
+      console: logstash
